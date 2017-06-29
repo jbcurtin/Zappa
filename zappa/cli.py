@@ -2177,6 +2177,21 @@ class ZappaCLI(object):
             temp_settings.write(bytes(settings_s, "utf-8"))
             temp_settings.close()
             lambda_zip.write(temp_settings.name, 'zappa_settings.py')
+            def _include_source(filepath):
+              for root, dirs, files in os.walk(filepath):
+                for filename in files:
+                  filepath = os.path.join(os.getcwd(), root, filename)
+                  filekey = os.path.join(root, filename)
+                  lambda_zip.write(filepath, filekey)
+
+                for dirname in dirs:
+                  dirpath = os.path.join(root, dirname)
+                  _include_source(dirpath)
+
+            source_folder = self.stage_config.get('source_folder', None)
+            if source_folder:
+              _include_source(source_folder)
+
             os.remove(temp_settings.name)
 
     def remove_local_zip(self):
